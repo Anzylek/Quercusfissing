@@ -1,465 +1,214 @@
 <!doctype html>
 <html lang="pl">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <title>Quercus Fishing 2.5D</title>
-  <style>
-    html, body { margin:0; padding:0; height:100%; background:#0a2a43; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; touch-action:none; }
-    #game { position:fixed; inset:0; }
-    canvas { width:100%; height:100%; display:block; background:#0a2a43; }
-    .ui { position:fixed; pointer-events:none; inset:0; }
-    .btn { position:fixed; pointer-events:auto; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25); backdrop-filter: blur(4px);
-           color:#fff; padding:.6rem .8rem; border-radius:.8rem; user-select:none; -webkit-user-select:none; touch-action:none;
-           font-weight:600; text-shadow:0 1px 0 rgba(0,0,0,.6); }
-    .btn:active { transform: scale(.98); }
-    .small { font-size:.9rem; padding:.45rem .6rem; }
-    .pill { border-radius: 999px; }
-    .hud { position:fixed; left: .6rem; top: .6rem; color:#fff; font-weight:600; text-shadow:0 1px 0 rgba(0,0,0,.6); }
-    .hud .chip { display:inline-block; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.25); padding:.3rem .6rem; border-radius:.6rem; margin-right:.4rem; }
-    .row { display:flex; gap:.5rem; align-items:center; }
-    .col { display:flex; gap:.5rem; flex-direction:column; }
-    /* Controls */
-    #left { left:.6rem; bottom:4.8rem; }
-    #right { left:4.8rem; bottom:4.8rem; }
-    #accel { right:4.8rem; bottom:4.8rem; }
-    #brake { right:.6rem; bottom:4.8rem; }
-    #anchor { left:.6rem; bottom:.6rem; }
-    #cast { right:.6rem; bottom:.6rem; }
-    #reel { right: 50%; transform: translateX(50%); bottom: .6rem; display:none; }
-    #pause { right:.6rem; top:.6rem; }
-    /* Menus */
-    .menu { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg,#0b2d4a,#051b2c); color:#fff; }
-    .card { width:min(720px,92vw); background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.2); border-radius:1rem; padding:1rem; box-shadow:0 10px 30px rgba(0,0,0,.4); }
-    .grid { display:grid; grid-template-columns: 1fr; gap:.75rem; }
-    @media (min-width:720px){ .grid{ grid-template-columns: 1fr 1fr; } }
-    .boat { background:rgba(255,255,255,.08); border-radius:.75rem; padding:.75rem; border:1px solid rgba(255,255,255,.18); cursor:pointer; }
-    .boat.selected { outline:2px solid #8be4ff; }
-    .title { font-size:1.4rem; font-weight:800; margin:.5rem 0 1rem; }
-    .muted { opacity:.9; font-size:.95rem; }
-    .center { text-align:center; }
-    .bar { height:10px; background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); border-radius:999px; overflow:hidden; }
-    .bar > div { height:100%; background:linear-gradient(90deg,#76f1ff,#00d4ff); width:50%; }
-    .linkish { color:#93e6ff; text-decoration:underline; cursor:pointer; }
-    /* Minigame */
-    #minigame { position:fixed; inset:0; display:none; align-items:center; justify-content:center; }
-    .mg-card { width:min(520px,90vw); background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.25); border-radius:1rem; padding:1rem; color:#fff; }
-    .gauge { position:relative; height:200px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.25); border-radius:.6rem; overflow:hidden; }
-    .sweet { position:absolute; left:0; right:0; top:30%; height:40%; background:rgba(0,255,128,.25); border-top:1px solid rgba(0,255,128,.6); border-bottom:1px solid rgba(0,255,128,.6); }
-    .needle { position:absolute; left:0; right:0; height:6px; background:#fff; box-shadow:0 0 10px rgba(255,255,255,.8); }
-    .mg-row { display:flex; align-items:center; justify-content:space-between; gap:.75rem; }
-    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; background:rgba(255,255,255,.15); padding:.1rem .35rem; border-radius:.35rem; border:1px solid rgba(255,255,255,.3); }
-    /* Modal */
-    #modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; }
-    .modal-card { width:min(560px,92vw); background:#0f2234; color:#fff; border:1px solid rgba(255,255,255,.25); border-radius:1rem; padding:1rem; }
-    .modal-footer { display:flex; justify-content:flex-end; gap:.5rem; margin-top:.5rem; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Quercus – Docking Challenge</title>
+<style>
+  html,body{height:100%;margin:0;background:#082033;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+  #cv{width:100%;height:100%;display:block;background:#082033}
+  .ui{position:fixed;inset:0;pointer-events:none}
+  .chip{position:fixed;left:.6rem;top:.6rem;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.25);
+        color:#fff;border-radius:.6rem;padding:.35rem .6rem;font-weight:600;text-shadow:0 1px 0 rgba(0,0,0,.6)}
+  .btn{pointer-events:auto;position:fixed;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);
+       color:#fff;border-radius:.9rem;padding:.6rem .8rem;font-weight:700;backdrop-filter:blur(4px);user-select:none}
+  .btn:active{transform:scale(.98)}
+  .pill{border-radius:999px}
+  #left{left:.6rem;bottom:4.8rem}
+  #right{left:4.8rem;bottom:4.8rem}
+  #throttle{right:4.8rem;bottom:4.8rem}
+  #reverse{right:.6rem;bottom:4.8rem}
+  #pause{right:.6rem;top:.6rem}
+  #reset{right:.6rem;top:3.2rem;display:none}
+  #cta{left:50%;transform:translateX(-50%);bottom:.6rem;display:none}
+  /* Menu / overlay */
+  .menu{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(180deg,#0b2d4a,#051b2c)}
+  .card{width:min(780px,94vw);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:1rem;padding:1rem;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+  .title{font-size:1.5rem;font-weight:800;margin:.25rem 0 .6rem}
+  .grid{display:grid;grid-template-columns:1fr;gap:.6rem}
+  @media(min-width:720px){.grid{grid-template-columns:1fr 1fr}}
+  .boat{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:.75rem;padding:.65rem;cursor:pointer}
+  .boat.selected{outline:2px solid #8be4ff}
+  .muted{opacity:.9}
+  .bar{height:10px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:999px;overflow:hidden}
+  .bar>div{height:100%;background:linear-gradient(90deg,#76f1ff,#00d4ff);width:50%}
+  #result{position:fixed;inset:0;display:none;align-items:center;justify-content:center}
+  .result-card{width:min(520px,92vw);background:#0f2234;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:1rem;padding:1rem}
+  .row{display:flex;gap:.5rem;align-items:center}
+</style>
 </head>
 <body>
-  <div id="game">
-    <canvas id="cv"></canvas>
-    <div class="ui">
-      <div class="hud">
-        <div class="row">
-          <div class="chip">Łódź: <span id="hudBoat">—</span></div>
-          <div class="chip">Prędkość: <span id="hudSpeed">0</span> kn</div>
-          <div class="chip">Ryby: <span id="hudFish">0</span></div>
-          <div class="chip">Lokalizacja: <span id="hudLoc">Bukowe</span></div>
-        </div>
-      </div>
-      <div id="left" class="btn pill">◄</div>
-      <div id="right" class="btn pill">►</div>
-      <div id="accel" class="btn pill">GAS</div>
-      <div id="brake" class="btn pill">HAM</div>
-      <div id="anchor" class="btn pill small">KOTWICA</div>
-      <div id="cast" class="btn pill small">ZARZUT</div>
-      <div id="reel" class="btn pill">HOLOWANIE</div>
-      <div id="pause" class="btn pill small">PAUZA</div>
+<canvas id="cv"></canvas>
+<div class="ui">
+  <div class="chip">Czas: <span id="hudTime">0.0</span>s • Uderzenia: <span id="hudHits">0</span> • Wiatr: <span id="hudWind">—</span></div>
+  <div id="left" class="btn pill">◄</div>
+  <div id="right" class="btn pill">►</div>
+  <div id="throttle" class="btn pill">GAZ</div>
+  <div id="reverse" class="btn pill">WSTECZ</div>
+  <div id="pause" class="btn pill">MODEL</div>
+  <div id="reset" class="btn pill">RESET</div>
+  <a id="cta" class="btn pill" href="#" target="_blank" rel="noopener">Zobacz ofertę</a>
+</div>
+
+<!-- Menu -->
+<div id="menu" class="menu" role="dialog" aria-modal="true">
+  <div class="card">
+    <div class="title">Quercus – Docking Challenge</div>
+    <div class="muted">Zadanie: wpłyń do boksu cumowniczego i zatrzymaj się z prędkością &lt; 0.5 kn przez 1s. Unikaj boi i pomostu. Wiatr utrudnia manewry.</div>
+    <div id="boats" class="grid" role="listbox" aria-label="Wybór łodzi"></div>
+    <div class="row" style="justify-content:space-between;margin-top:.6rem">
+      <div class="muted">Sterowanie: <b>◄ ►</b> skręt • <b>GAZ/WSTECZ</b> na ekranie. Desktop: <b>A/D</b>, <b>W/S</b>.</div>
+      <button id="start" class="btn">Start</button>
     </div>
   </div>
+</div>
 
-  <!-- Main menu -->
-  <div id="menu" class="menu">
-    <div class="card">
-      <div class="title">Quercus Fishing 2.5D</div>
-      <div class="muted">Wybierz łódź i ruszaj na łowy. Działa w przeglądarce mobilnej i offline.</div>
-      <div id="boats" class="grid" role="listbox" aria-label="Wybór łodzi"></div>
-      <div class="row" style="margin-top:.75rem; justify-content:space-between;">
-        <div class="muted">Sterowanie: <span class="kbd">◄ ►</span> skręt, <span class="kbd">W/S</span> gaz/ham, <span class="kbd">Spacja</span> kotwica, <span class="kbd">F</span> zarzut, <span class="kbd">R</span> holowanie.</div>
-        <button id="start" class="btn">Start</button>
-      </div>
+<!-- Result overlay -->
+<div id="result" class="menu">
+  <div class="result-card">
+    <div style="font-weight:800;margin-bottom:.25rem">Wynik rundy</div>
+    <div id="resBody" class="muted"></div>
+    <div class="row" style="justify-content:flex-end;margin-top:.6rem">
+      <button id="again" class="btn">Jeszcze raz</button>
     </div>
   </div>
+</div>
 
-  <!-- Minigame overlay -->
-  <div id="minigame" class="menu">
-    <div class="mg-card">
-      <div style="font-weight:800; margin-bottom:.5rem;">Holowanie ryby</div>
-      <div class="gauge">
-        <div class="sweet" id="sweet"></div>
-        <div class="needle" id="needle" style="top:50%"></div>
-      </div>
-      <div class="mg-row" style="margin-top:.6rem;">
-        <div>Trzymaj wskaźnik w zielonej strefie.</div>
-        <div><span class="kbd">R</span> / przycisk <b>HOLOWANIE</b></div>
-      </div>
-      <div class="mg-row" style="margin-top:.6rem;">
-        <div id="mgStatus" class="muted">Czas: <span id="mgTime">6.0</span>s</div>
-        <div class="row">
-          <button id="mgCancel" class="btn small">Przerwij</button>
-        </div>
-      </div>
-    </div>
-  </div>
+<script>
+const BOATS = [
+  {id:"Quercus430", name:"Quercus 430", maxSpeed:2.9, turn:2.2, mass:1.0, link:"#"},
+  {id:"Quercus431", name:"Quercus 431", maxSpeed:3.0, turn:2.3, mass:1.05, link:"#"},
+  {id:"Quercus470", name:"Quercus 470 Open", maxSpeed:3.4, turn:2.0, mass:1.1, link:"#"},
+  {id:"Quercus505", name:"Quercus 505", maxSpeed:3.7, turn:1.8, mass:1.15, link:"#"},
+  {id:"Quercus520", name:"Quercus 520", maxSpeed:4.0, turn:1.7, mass:1.2, link:"#"},
+];
+const COURSE = {
+  dock:{x:820,y:360,w:120,h:70,angle:0},
+  buoys:[{x:380,y:250,r:14},{x:430,y:330,r:14},{x:520,y:300,r:14},{x:600,y:370,r:14},{x:690,y:340,r:14}],
+  start:{x:120,y:360,angle:0},
+  walls:[{x:760,y:300,w:12,h:160},{x:880,y:300,w:12,h:160}]
+};
+const SETTINGS = { targetStopSpeed:0.5, requiredHold:1.0, hitPenalty:1.5 };
 
-  <!-- Modal for model card -->
-  <div id="modal" class="menu">
-    <div class="modal-card">
-      <div style="font-weight:800; margin-bottom:.25rem;">Karta modelu</div>
-      <div id="modalBody" class="muted"></div>
-      <div class="modal-footer">
-        <a id="offerLink" class="btn" href="#" target="_blank" rel="noopener">Zobacz ofertę</a>
-        <button id="closeModal" class="btn">Zamknij</button>
-      </div>
-    </div>
-  </div>
+let selected = BOATS[0];
+let running=false, finished=false;
+let time=0, hits=0, holdT=0;
+let wind = {x:0,y:0,kn:0,dir:0};
 
-  <script>
-  // --- Game State ---
-  const boats = [
-    { id:"Quercus430", name:"Quercus 430", maxSpeed:3.2, turn:2.0, stability:0.20, comfort:0.1, link:"#"},
-    { id:"Quercus431", name:"Quercus 431", maxSpeed:3.3, turn:2.1, stability:0.22, comfort:0.11, link:"#"},
-    { id:"Quercus470", name:"Quercus 470 Open", maxSpeed:3.8, turn:1.8, stability:0.25, comfort:0.12, link:"#"},
-    { id:"Quercus505", name:"Quercus 505", maxSpeed:4.2, turn:1.6, stability:0.28, comfort:0.13, link:"#"},
-    { id:"Quercus520", name:"Quercus 520", maxSpeed:4.5, turn:1.5, stability:0.30, comfort:0.15, link:"#"},
-  ];
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let W=0,H=0,DPR=1;
+function resize(){ DPR=Math.max(1,Math.min(2,window.devicePixelRatio||1)); W=cv.clientWidth*DPR; H=cv.clientHeight*DPR; cv.width=W; cv.height=H; }
+window.addEventListener('resize', resize, {passive:true}); resize();
 
-  let selectedBoat = boats[0];
-  let running = false;
-  let anchored = false;
-  let fishCount = 0;
+const input = {left:false,right:false,throttle:false,reverse:false};
+function bindHold(id,key){ const el=document.getElementById(id); const on=e=>{e.preventDefault();input[key]=true}; const off=e=>{e.preventDefault();input[key]=false}; el.addEventListener('touchstart',on,{passive:false}); el.addEventListener('touchend',off,{passive:false}); el.addEventListener('mousedown',on); el.addEventListener('mouseup',off); el.addEventListener('mouseleave',off); }
+bindHold('left','left'); bindHold('right','right'); bindHold('throttle','throttle'); bindHold('reverse','reverse');
+window.addEventListener('keydown', e=>{ if(e.code==='KeyA'||e.code==='ArrowLeft')input.left=true; if(e.code==='KeyD'||e.code==='ArrowRight')input.right=true; if(e.code==='KeyW'||e.code==='ArrowUp')input.throttle=true; if(e.code==='KeyS'||e.code==='ArrowDown')input.reverse=true; });
+window.addEventListener('keyup', e=>{ if(e.code==='KeyA'||e.code==='ArrowLeft')input.left=false; if(e.code==='KeyD'||e.code==='ArrowRight')input.right=false; if(e.code==='KeyW'||e.code==='ArrowUp')input.throttle=false; if(e.code==='KeyS'||e.code==='ArrowDown')input.reverse=false; });
 
-  // Canvas & world
-  const cv = document.getElementById('cv');
-  const ctx = cv.getContext('2d');
-  let W = 0, H = 0, DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+const hudTime=document.getElementById('hudTime');
+const hudHits=document.getElementById('hudHits');
+const hudWind=document.getElementById('hudWind');
+document.getElementById('pause').addEventListener('click', ()=> openMenu());
+document.getElementById('reset').addEventListener('click', ()=> resetRound());
+const cta = document.getElementById('cta');
 
-  const world = {
-    x:0, y:0, angle:0, speed:0,
-  };
-
-  const input = {
-    left:false, right:false, accel:false, brake:false,
-    reel:false,
-  };
-
-  function resize(){
-    W = cv.clientWidth * DPR;
-    H = cv.clientHeight * DPR;
-    cv.width = W; cv.height = H;
-  }
-  window.addEventListener('resize', resize, {passive:true});
-  resize();
-
-  // --- UI helpers ---
-  function qs(id){ return document.getElementById(id); }
-  function setText(id,v){ qs(id).textContent = v; }
-
-  // Populate boats in menu
-  const boatsEl = qs('boats');
-  let selIndex = 0;
-  function renderBoatList(){
-    boatsEl.innerHTML = "";
-    boats.forEach((b, i)=>{
-      const el = document.createElement('div');
-      el.className = 'boat' + (i===selIndex ? ' selected':'');
-      el.setAttribute('role','option');
-      el.setAttribute('aria-selected', i===selIndex ? 'true':'false');
-      el.innerHTML = `
-        <div style="font-weight:700">${b.name}</div>
-        <div class="muted">Prędkość max: ${b.maxSpeed.toFixed(1)} kn • Sterowność: ${b.turn.toFixed(1)} • Stabilność: ${(b.stability*100|0)}%</div>
-        <div class="bar" style="margin-top:.35rem"><div style="width:${Math.min(100, b.maxSpeed/5*100)}%"></div></div>
-      `;
-      el.addEventListener('click', ()=>{ selIndex=i; selectedBoat=boats[i]; renderBoatList(); });
-      boatsEl.appendChild(el);
-    });
-  }
-  renderBoatList();
-
-  // Start button
-  qs('start').addEventListener('click', ()=>{
-    selectedBoat = boats[selIndex];
-    qs('menu').style.display='none';
-    setText('hudBoat', selectedBoat.name);
-    running = true;
-    loop();
+const boatsEl = document.getElementById('boats'); let selIdx=0;
+function renderBoatList(){
+  boatsEl.innerHTML='';
+  BOATS.forEach((b,i)=>{
+    const el=document.createElement('div');
+    el.className='boat'+(i===selIdx?' selected':'');
+    el.innerHTML=`<div style="font-weight:700">${b.name}</div>
+      <div class="muted">Max: ${b.maxSpeed.toFixed(1)} kn • Skręt: ${b.turn.toFixed(1)}</div>
+      <div class="bar" style="margin-top:.35rem"><div style="width:${Math.min(100,b.maxSpeed/4*100)}%"></div></div>`;
+    el.addEventListener('click',()=>{selIdx=i;selected=BOATS[i];renderBoatList();});
+    boatsEl.appendChild(el);
   });
+}
+renderBoatList();
+document.getElementById('start').addEventListener('click',()=>{ selected=BOATS[selIdx]; document.getElementById('menu').style.display='none'; document.getElementById('reset').style.display='block'; startRound(); });
+function openMenu(){ running=false; document.getElementById('menu').style.display='flex'; }
 
-  // Controls - touch
-  function bindHold(id, key){
-    const el = qs(id);
-    const on = (e)=>{ e.preventDefault(); input[key]=true; };
-    const off = (e)=>{ e.preventDefault(); input[key]=false; };
-    el.addEventListener('touchstart', on, {passive:false});
-    el.addEventListener('touchend', off, {passive:false});
-    el.addEventListener('mousedown', on);
-    el.addEventListener('mouseup', off);
-    el.addEventListener('mouseleave', off);
-  }
-  bindHold('left','left');
-  bindHold('right','right');
-  bindHold('accel','accel');
-  bindHold('brake','brake');
-  bindHold('reel','reel');
+const boat={x:0,y:0,angle:0,vx:0,vy:0,rv:0};
+function startRound(){
+  wind.dir=Math.random()*Math.PI*2; wind.kn=0.6+Math.random()*1.4; wind.x=Math.cos(wind.dir)*wind.kn*0.05; wind.y=Math.sin(wind.dir)*wind.kn*0.05;
+  hudWind.textContent=wind.kn.toFixed(1)+' kn';
+  boat.x=COURSE.start.x; boat.y=COURSE.start.y; boat.angle=COURSE.start.angle; boat.vx=boat.vy=0; boat.rv=0;
+  time=0; hits=0; holdT=0; finished=false; running=true; cta.style.display='none';
+}
+function resetRound(){ startRound(); }
 
-  // Anchor toggle, Cast
-  qs('anchor').addEventListener('click', ()=>{
-    anchored = !anchored;
-  });
-  let biteTimeout = null;
-  qs('cast').addEventListener('click', ()=>{
-    if(!anchored) return toast("Zrzuć kotwicę!");
-    if (biteTimeout) return;
-    toast("Zarzucono przynętę…");
-    biteTimeout = setTimeout(()=>{
-      biteTimeout = null;
-      startMinigame();
-    }, 1200 + Math.random()*1800);
-  });
+function drawWater(t){
+  ctx.save(); ctx.fillStyle='#082033'; ctx.fillRect(0,0,W,H);
+  for(let i=0;i<2;i++){ const yStep=16*DPR*(i+1); ctx.globalAlpha=0.08+i*0.05; ctx.strokeStyle='#9ae6ff'; ctx.lineWidth=1*DPR; ctx.beginPath();
+    for(let y=0;y<H;y+=yStep){ ctx.moveTo(0,y); for(let x=0;x<W;x+=14*DPR){ const k=0.02+i*0.01, amp=4*DPR+i*2*DPR; const yy=y+Math.sin((x+t*60+y*0.3)*k)*amp; ctx.lineTo(x,yy);} } ctx.stroke(); }
+  ctx.restore();
+}
+function drawCourse(){
+  const d=COURSE.dock; ctx.save(); ctx.translate(d.x*DPR,d.y*DPR); ctx.rotate(d.angle);
+  ctx.fillStyle='rgba(0,255,128,.08)'; ctx.strokeStyle='rgba(0,255,128,.6)'; ctx.lineWidth=2*DPR;
+  ctx.fillRect(-d.w/2*DPR,-d.h/2*DPR,d.w*DPR,d.h*DPR); ctx.strokeRect(-d.w/2*DPR,-d.h/2*DPR,d.w*DPR,d.h*DPR); ctx.restore();
+  ctx.save(); ctx.fillStyle='#20394d'; COURSE.walls.forEach(w=>{ ctx.fillRect(w.x*DPR,w.y*DPR,w.w*DPR,w.h*DPR); }); ctx.restore();
+  ctx.save(); ctx.strokeStyle='#fff'; ctx.fillStyle='#ffcc00'; COURSE.buoys.forEach(b=>{ ctx.beginPath(); ctx.arc(b.x*DPR,b.y*DPR,b.r*DPR,0,Math.PI*2); ctx.fill(); ctx.stroke(); }); ctx.restore();
+  ctx.save(); ctx.fillStyle='rgba(255,255,255,.2)'; ctx.fillRect((COURSE.start.x-20)*DPR,(COURSE.start.y-10)*DPR,40*DPR,20*DPR); ctx.restore();
+}
+function drawBoat(){
+  ctx.save(); ctx.translate(boat.x*DPR,boat.y*DPR); ctx.rotate(boat.angle+Math.PI/2);
+  ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(0,16*DPR,24*DPR,10*DPR,0,0,Math.PI*2); ctx.fill();
+  const hull=ctx.createLinearGradient(0,-26*DPR,0,26*DPR); hull.addColorStop(0,'#e6f7ff'); hull.addColorStop(1,'#8bd3ff');
+  ctx.fillStyle=hull; ctx.strokeStyle='rgba(0,0,0,.3)'; ctx.lineWidth=1.5*DPR;
+  ctx.beginPath(); ctx.moveTo(0,-28*DPR); ctx.quadraticCurveTo(14*DPR,-10*DPR,12*DPR,26*DPR); ctx.lineTo(-12*DPR,26*DPR); ctx.quadraticCurveTo(-14*DPR,-10*DPR,0,-28*DPR); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.restore();
+}
+function drawHUD(){ hudTime.textContent=time.toFixed(1); hudHits.textContent=hits; }
 
-  // Pause & modal
-  qs('pause').addEventListener('click', ()=>{
-    openModelCard();
-  });
-  qs('closeModal').addEventListener('click', ()=> qs('modal').style.display='none');
+function step(dt){
+  if(!running) return; time+=dt;
+  const thrust=(input.throttle?1:0)-(input.reverse?1:0);
+  const targetSpeed=thrust*selected.maxSpeed;
+  const dirx=Math.cos(boat.angle), diry=Math.sin(boat.angle);
+  const speedAlong=boat.vx*dirx+boat.vy*diry;
+  const accel=0.8; const desired=targetSpeed; const delta=desired-speedAlong; const applied=Math.max(-1,Math.min(1,delta))*accel*dt; const newSpeedAlong=speedAlong+applied;
+  const vxAlong=dirx*newSpeedAlong, vyAlong=diry*newSpeedAlong;
+  const lateralx=boat.vx-speedAlong*dirx, lateraly=boat.vy-speedAlong*diry;
+  const drag=0.9; boat.vx=vxAlong+lateralx*(1-3*dt*drag); boat.vy=vyAlong+lateraly*(1-3*dt*drag);
+  boat.vx+=wind.x*dt; boat.vy+=wind.y*dt;
+  const turnInput=(input.right?1:0)-(input.left?1:0);
+  const turnRate=selected.turn*(0.3+0.7*Math.min(1,Math.abs(speedAlong)/selected.maxSpeed));
+  boat.angle+=turnInput*turnRate*dt;
+  boat.x+=boat.vx*60*dt; boat.y+=boat.vy*60*dt;
+  for(const b of COURSE.buoys){ const dx=boat.x-b.x, dy=boat.y-b.y; const r=18; if(dx*dx+dy*dy<(b.r+r)*(b.r+r)){ reflectFromPoint(b.x,b.y); penalize(); } }
+  for(const w of COURSE.walls){ if(boat.x>w.x-18 && boat.x<w.x+w.w+18 && boat.y>w.y-18 && boat.y<w.y+w.h+18){ boat.vx*=-0.5; boat.vy*=-0.5; penalize(); } }
+  const d=COURSE.dock;
+  if(boat.x>d.x-d.w/2 && boat.x<d.x+d.w/2 && boat.y>d.y-d.h/2 && boat.y<d.y+d.h/2){
+    const kn=Math.hypot(boat.vx,boat.vy);
+    if(kn < SETTINGS.targetStopSpeed/3){ holdT+=dt; if(holdT>=SETTINGS.requiredHold) finishRound(); }
+    else{ holdT=Math.max(0,holdT-dt*0.5); }
+  }else{ holdT=Math.max(0,holdT-dt*0.5); }
+}
+function reflectFromPoint(px,py){
+  const nx=boat.x-px, ny=boat.y-py; const len=Math.hypot(nx,ny)||1; const ux=nx/len, uy=ny/len; const dot=boat.vx*ux+boat.vy*uy;
+  boat.vx=boat.vx-1.5*dot*ux; boat.vy=boat.vy-1.5*dot*uy;
+}
+function penalize(){ hits++; time+=SETTINGS.hitPenalty; }
 
-  function openModelCard(){
-    const body = qs('modalBody');
-    body.innerHTML = `
-      <div style="margin:.25rem 0 .5rem 0"><b>${selectedBoat.name}</b></div>
-      <div>Prędkość max: ${selectedBoat.maxSpeed.toFixed(1)} kn</div>
-      <div>Sterowność: ${selectedBoat.turn.toFixed(1)}</div>
-      <div>Stabilność przy kotwicy: ${(selectedBoat.stability*100|0)}%</div>
-      <div style="margin-top:.5rem" class="muted">Po łowach – sprawdź ofertę i umów wizytę.</div>
-    `;
-    const link = qs('offerLink');
-    link.href = selectedBoat.link || "#";
-    qs('modal').style.display='flex';
-  }
+let last=performance.now();
+function loop(now){ const t=now||performance.now(); const dt=Math.min(0.033,(t-last)/1000); last=t; drawWater(t/1000); drawCourse(); drawBoat(); drawHUD(); step(dt); requestAnimationFrame(loop); }
+loop();
 
-  // Keyboard
-  window.addEventListener('keydown', (e)=>{
-    if(e.code==='ArrowLeft' || e.code==='KeyA') input.left = true;
-    if(e.code==='ArrowRight' || e.code==='KeyD') input.right = true;
-    if(e.code==='ArrowUp' || e.code==='KeyW') input.accel = true;
-    if(e.code==='ArrowDown' || e.code==='KeyS') input.brake = true;
-    if(e.code==='Space'){ anchored = !anchored; e.preventDefault(); }
-    if(e.code==='KeyF'){ if(anchored && !biteTimeout){ biteTimeout = setTimeout(()=>{ biteTimeout=null; startMinigame(); }, 1200 + Math.random()*1800 ); } }
-    if(e.code==='KeyR') input.reel = true;
-  });
-  window.addEventListener('keyup', (e)=>{
-    if(e.code==='ArrowLeft' || e.code==='KeyA') input.left = false;
-    if(e.code==='ArrowRight' || e.code==='KeyD') input.right = false;
-    if(e.code==='ArrowUp' || e.code==='KeyW') input.accel = false;
-    if(e.code==='ArrowDown' || e.code==='KeyS') input.brake = false;
-    if(e.code==='KeyR') input.reel = false;
-  });
-
-  // Toasts
-  let toastTimer = null;
-  function toast(text){
-    const el = document.createElement('div');
-    el.className='btn';
-    el.style.left='50%'; el.style.top='12px'; el.style.transform='translateX(-50%)';
-    el.textContent = text;
-    document.body.appendChild(el);
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=>{ el.remove(); }, 1500);
-  }
-
-  // --- Minigame ---
-  const mg = {
-    active:false,
-    t:0,
-    duration:6.0,
-    level:.5,
-    sweetMin:.3,
-    sweetMax:.7,
-    jiggle: .55,
-  };
-
-  function startMinigame(){
-    mg.active = true;
-    mg.t = mg.duration;
-    mg.level = .5;
-    mg.sweetMin = .35 - selectedBoat.stability*0.15;
-    mg.sweetMax = .65 + selectedBoat.stability*0.15;
-    qs('minigame').style.display='flex';
-    qs('reel').style.display='block';
-    updateMGUi();
-  }
-  function endMinigame(caught){
-    mg.active = false;
-    qs('minigame').style.display='none';
-    qs('reel').style.display='none';
-    if(caught){
-      fishCount++; setText('hudFish', fishCount);
-      toast("Złowiono rybę!");
-    }else{
-      toast("Ryba zeszła…");
-    }
-  }
-  function updateMGUi(){
-    qs('mgTime').textContent = mg.t.toFixed(1);
-    const g = qs('sweet');
-    g.style.top = (mg.sweetMin*100).toFixed(1)+'%';
-    g.style.height = ((mg.sweetMax - mg.sweetMin)*100).toFixed(1)+'%';
-    qs('needle').style.top = (mg.level*100).toFixed(1)+'%';
-  }
-  qs('mgCancel').addEventListener('click', ()=> endMinigame(false));
-
-  function stepMinigame(dt){
-    if(!mg.active) return;
-    // Reel raises level, gravity lowers it
-    const reel = input.reel ? 1 : 0;
-    mg.level += (reel ? 0.9 : -0.6) * dt;
-    // Jiggle
-    mg.level += (Math.random() - .5) * mg.jiggle * dt;
-    mg.level = Math.max(0, Math.min(1, mg.level));
-    mg.t -= dt;
-    const inSweet = (mg.level >= mg.sweetMin && mg.level <= mg.sweetMax);
-    // Losing progress if out of sweet for long
-    if(!inSweet) mg.t -= dt * .5;
-    updateMGUi();
-    if(mg.level<=0 || mg.level>=1){ endMinigame(false); }
-    else if(mg.t<=0){ endMinigame(true); }
-  }
-
-  // --- Game loop ---
-  let last = performance.now();
-  function loop(now){
-    if(!running) return;
-    const t = now || performance.now();
-    const dt = Math.min(0.033, (t - last)/1000);
-    last = t;
-    update(dt);
-    draw();
-    requestAnimationFrame(loop);
-  }
-
-  function update(dt){
-    // Movement
-    const accel = input.accel ? 1 : 0;
-    const brake = input.brake ? 1 : 0;
-    const target = anchored ? 0 : Math.max(0, Math.min(1, accel - 0.5*brake));
-    const maxSpeed = selectedBoat.maxSpeed;
-    world.speed += (target*maxSpeed - world.speed) * (anchored ? 2.5 : 1.8) * dt;
-    // Turn rate proportional to speed
-    const speedNorm = Math.max(0.2, world.speed / Math.max(0.0001, maxSpeed));
-    const turnInput = (input.right?1:0) - (input.left?1:0);
-    world.angle += turnInput * selectedBoat.turn * speedNorm * dt;
-
-    // Integrate position
-    world.x += Math.cos(world.angle) * world.speed * 60 * dt; // arbitrary scale
-    world.y += Math.sin(world.angle) * world.speed * 60 * dt;
-
-    // HUD
-    setText('hudSpeed', (world.speed).toFixed(1));
-
-    // Minigame step
-    stepMinigame(dt);
-  }
-
-  function drawWater(ctx, t){
-    // Parallax wave lines
-    ctx.save();
-    ctx.fillStyle = '#0a2a43';
-    ctx.fillRect(0,0,W,H);
-    // Simple procedural ripples
-    for(let i=0;i<2;i++){
-      const yStep = 16 * DPR * (i+1);
-      ctx.globalAlpha = 0.08 + i*0.05;
-      ctx.strokeStyle = '#9ae6ff';
-      ctx.lineWidth = 1 * DPR;
-      ctx.beginPath();
-      for(let y=0;y<H;y+=yStep){
-        ctx.moveTo(0,y);
-        for(let x=0;x<W;x+=14*DPR){
-          const k = 0.02 + i*0.01;
-          const amp = 4*DPR + i*2*DPR;
-          const yy = y + Math.sin((x + t*60 + y*0.3)*k) * amp;
-          ctx.lineTo(x, yy);
-        }
-      }
-      ctx.stroke();
-    }
-    ctx.restore();
-  }
-
-  function drawBoat(ctx){
-    ctx.save();
-    ctx.translate(W/2, H/2);
-    ctx.rotate(world.angle + Math.PI/2);
-    // shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.25)';
-    ctx.beginPath();
-    ctx.ellipse(0, 16*DPR, 24*DPR, 10*DPR, 0, 0, Math.PI*2);
-    ctx.fill();
-    // hull
-    const hull = ctx.createLinearGradient(0,-26*DPR,0,26*DPR);
-    hull.addColorStop(0,'#e6f7ff');
-    hull.addColorStop(1,'#8bd3ff');
-    ctx.fillStyle = hull;
-    ctx.strokeStyle = 'rgba(0,0,0,.3)';
-    ctx.lineWidth = 1.5*DPR;
-    ctx.beginPath();
-    ctx.moveTo(0,-28*DPR);
-    ctx.quadraticCurveTo(14*DPR, -10*DPR, 12*DPR, 26*DPR);
-    ctx.lineTo(-12*DPR, 26*DPR);
-    ctx.quadraticCurveTo(-14*DPR, -10*DPR, 0,-28*DPR);
-    ctx.closePath();
-    ctx.fill(); ctx.stroke();
-    // foam
-    ctx.strokeStyle = 'rgba(255,255,255,.55)';
-    ctx.lineWidth = 2*DPR;
-    ctx.beginPath();
-    ctx.moveTo(-10*DPR, 26*DPR);
-    ctx.lineTo(10*DPR, 26*DPR);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawAnchor(ctx){
-    if(!anchored) return;
-    ctx.save();
-    ctx.translate(W/2, H/2 + 32*DPR);
-    ctx.strokeStyle = 'rgba(255,255,255,.6)';
-    ctx.lineWidth = 1*DPR;
-    ctx.beginPath();
-    ctx.moveTo(0,-8*DPR); ctx.lineTo(0, 20*DPR);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.arc(0, 24*DPR, 8*DPR, Math.PI, 0);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function draw(){
-    const t = performance.now()/1000;
-    ctx.clearRect(0,0,W,H);
-    drawWater(ctx, t);
-    drawBoat(ctx);
-    drawAnchor(ctx);
-  }
-
-  // Kick things for mobile visibility
-  setText('hudFish', fishCount);
-
-  // Expose easy hook to set offer links from outside (future)
-  window.setOfferLink = function(boatId, url){
-    const b = boats.find(x=>x.id===boatId);
-    if(b) b.link = url;
-  }
-  </script>
+const result=document.getElementById('result'); const resBody=document.getElementById('resBody');
+document.getElementById('again').addEventListener('click',()=>{ result.style.display='none'; resetRound(); });
+function finishRound(){
+  if(finished) return; finished=true; running=false;
+  const key='quercus_dock_best_'+selected.id; const prev=parseFloat(localStorage.getItem(key)||'99999'); const best=Math.min(prev,time); localStorage.setItem(key,best.toFixed(2));
+  resBody.innerHTML=`Łódź: <b>${selected.name}</b><br>Czas (z karami): <b>${time.toFixed(2)} s</b> • Uderzenia: <b>${hits}</b><br>Najlepszy wynik dla tego modelu na tym urządzeniu: <b>${best.toFixed(2)} s</b>`;
+  result.style.display='flex';
+  const link=selected.link||'#'; const ctaEl=document.getElementById('cta'); ctaEl.href=link; ctaEl.style.display='block';
+}
+window.setOfferLink=function(boatId,url){ const b=BOATS.find(x=>x.id===boatId); if(b) b.link=url; }
+document.getElementById('menu').style.display='flex';
+</script>
 </body>
 </html>
